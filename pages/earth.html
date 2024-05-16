@@ -70,7 +70,8 @@
         const z = await zarr.openArray({
             // (Paleoclimate)> python -m http.server # start server here
             // (Paleoclimate)> open Paleoclimate/web/index.html
-            store: "http://localhost:8000/data/",
+            // store: "http://localhost:8000/data/",
+            store: "https://ncar.github.io/PaleoTest/data/",
             path: "range.zarr/range",
             // path: "U10_0.zarr/U10",
             mode: "r"
