@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Earth Babylon.js Test</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <script src="https://unpkg.com/zarr/zarr.umd.js"></script>
+
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+    </head>
+
+
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script>
+
+
+        /*
+    const requestData = async () => {
+        const z = await zarr.openArray({
+            store: "http://localhost:8000/data/",
+            path: "U10_0.zarr/U10",
+            mode: "r"
+        });
+        const arrayData = await z.get();
+
+        return arrayData;
+        // console.log(arrayData);
+        // console.log(arrayData.data);
+    };
+    */
+
+
+    async function requestData() {
+        const z = await zarr.openArray({
+            // (Paleoclimate)> python -m http.server # start server here
+            // (Paleoclimate)> open Paleoclimate/web/index.html
+            store: "http://localhost:8000/data/",
+            path: "range.zarr/range",
+            // path: "U10_0.zarr/U10",
+            mode: "r"
+        });
+        
+        return arrayData = await z.get();
+    };
+
+
+
+
+var canvas = document.getElementById("renderCanvas");
+
+
+function startRenderLoop(engine, canvas) {
+    engine.runRenderLoop(function () {
+        if (sceneToRender && sceneToRender.activeCamera) {
+            sceneToRender.render();
+        }
+    });
+}
+
+
+var engine = null;
+var scene = null;
+var sceneToRender = null;
+
+
+function createDefaultEngine() {
+    return new BABYLON.Engine(
+        canvas, true, {
+            preserveDrawingBuffer: true,
+            stencil: true,
+            disableWebGL2Support: false}
+    ); 
+}
+
+
+function createScene() {
+    var scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+
+    var camera = new BABYLON.ArcRotateCamera(
+        // "camera", BABYLON.Tools.ToRadians(15), BABYLON.Tools.ToRadians(65),
+        "camera", BABYLON.Tools.ToRadians(135), BABYLON.Tools.ToRadians(90),
+                10, BABYLON.Vector3.Zero(), scene);
+             // ^^ 10 == camera radius distance start
+    camera.attachControl(canvas, true);
+    camera.inertia = .7;
+    // camera.upperBetaLimit = Math.PI / 2.2; // Disable tilting up
+    camera.lowerRadiusLimit = 3; // Stop close to screen
+    camera.upperRadiusLimit = 60;
+    camera.pinchDeltaPercentage = 0.0005; // Phone zoom
+
+    var light = new BABYLON.HemisphericLight(
+                "light", new BABYLON.Vector3(0, 0, 0), scene);
+    // light.intensity = 2;
+    light.intensity = 50;
+
+
+
+
+    BABYLON.SceneLoader.ImportMesh(
+        "", "../objects/", "sphere_U10.gltf",
+        // "", "../objects/", "sphere_U10.gltf",
+        // "", "../objects/", "realigned_U10.glb",
+        scene, function (newMeshes)
+    {
+
+        camera.target = newMeshes[0];
+        var earth = newMeshes[1];
+
+
+
+        /*
+        var videoTexture = new BABYLON.VideoTexture(
+            "video",
+            ["media/Intx.3_ortho.mp4"],
+            scene,
+            false,
+            false,
+            BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
+            {
+                autoPlay:false,
+                autoUpdateTexture:true
+            }
+        );
+        */
+ 
+
+        var positions = earth.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        // var normals = earth.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+        var colors = earth.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+        // var uvs = earth.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        // var indices = earth.getIndices();
+        console.log(`Vertex positions: ${positions}`)
+        // console.log(`Vertex normals: ${normals}`)
+        console.log(`Vertex colors: ${colors}`)
+        // console.log(`Vertex UVs: ${uvs}`)
+        // console.log(`Vertex indices: ${indices}`)
+
+
+
+
+
+        requestData().then(arrayData => {
+            U10_colors = []
+            for(let p = 0; p < positions.length / 3; p++) {
+                let color = arrayData.data[p];
+                U10_colors.push(color, color, color, 1);
+                // U10_colors.push(.5, .2, .3, 1);
+            }
+            console.log(`New colors: ${U10_colors}`)
+            // earth.setVerticesData(BABYLON.VertexBuffer.ColorKind, U10_colors);
+        });
+
+
+
+        // Load random test colors for verts
+        // test_colors = []
+        // for(let p = 0; p < positions.length / 3; p++) {
+            // test_colors.push(Math.random(), Math.random(), Math.random(), 1);
+        // }
+        // console.log(test_colors)
+        // earth.setVerticesData(BABYLON.VertexBuffer.ColorKind, test_colors);
+
+
+
+        // const fs = require('fs/promises')
+        // const zarr = require('zarr-js')(fs.readFile)
+        // zarr.load('example.zarr', (err, array) => {
+            // console.log(array.data)
+        // })
+
+
+
+
+
+
+
+
+
+        // earth.material = new BABYLON.StandardMaterial("mat", scene);
+        // earth.material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+
+        // earth.material.diffuseTexture = videoTexture;
+
+
+
+
+        /*
+        scene.onPointerObservable.add(function (evt){
+            if (evt.pickInfo.pickedMesh === earth){
+                if (videoTexture.video.paused)
+                    videoTexture.video.play();
+                else
+                    videoTexture.video.pause();
+                console.log(videoTexture.video.paused ? "paused" : "playing");
+            }
+        }, BABYLON.PointerEventTypes.POINTERPICK);
+        */
+
+
+
+
+    });
+
+    return scene;
+};
+
+
+
+
+
+
+window.initFunction = async function() {
+
+    var asyncEngineCreation = async function() {
+        try {
+            return createDefaultEngine();
+        } catch(e) {
+            console.log("the available createEngine function failed. Creating the default engine instead");
+            return createDefaultEngine();
+        }
+    }
+
+    window.engine = await asyncEngineCreation();
+    if (!engine) throw 'engine should not be null.';
+    startRenderLoop(engine, canvas);
+    window.scene = createScene();
+};
+
+window.initFunction().then(() => {sceneToRender = scene});
+
+// Resize
+window.addEventListener("resize", function () {engine.resize();});
+
+
+    </script>
+
+</body>
+
+</html>
