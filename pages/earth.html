@@ -70,7 +70,8 @@
         const z = await zarr.openArray({
             // (Paleoclimate)> python -m http.server # start server here
             // (Paleoclimate)> open Paleoclimate/web/index.html
-            store: "http://localhost:8000/data/",
+            // store: "http://localhost:8000/data/",
+            store: "https://ncar.github.io/PaleoTest/data/",
             path: "range.zarr/range",
             // path: "U10_0.zarr/U10",
             mode: "r"
@@ -134,7 +135,8 @@ function createScene() {
 
 
     BABYLON.SceneLoader.ImportMesh(
-        "", "../objects/", "sphere_U10.gltf",
+        "", "../objects/", "EarthTemplate_SphereDispMap_AdapMesh.glb",
+        // "", "../objects/", "sphere_U10.gltf",
         // "", "../objects/", "sphere_U10.gltf",
         // "", "../objects/", "realigned_U10.glb",
         scene, function (newMeshes)
@@ -145,10 +147,9 @@ function createScene() {
 
 
 
-        /*
         var videoTexture = new BABYLON.VideoTexture(
             "video",
-            ["media/Intx.3_ortho.mp4"],
+            ["media/Preind_U10_IntxTex_900x900.mp4"],
             scene,
             false,
             false,
@@ -158,9 +159,9 @@ function createScene() {
                 autoUpdateTexture:true
             }
         );
-        */
  
 
+        /*
         var positions = earth.getVerticesData(BABYLON.VertexBuffer.PositionKind);
         // var normals = earth.getVerticesData(BABYLON.VertexBuffer.NormalKind);
         var colors = earth.getVerticesData(BABYLON.VertexBuffer.ColorKind);
@@ -171,11 +172,13 @@ function createScene() {
         console.log(`Vertex colors: ${colors}`)
         // console.log(`Vertex UVs: ${uvs}`)
         // console.log(`Vertex indices: ${indices}`)
+        */
 
 
 
 
 
+        /*
         requestData().then(arrayData => {
             U10_colors = []
             for(let p = 0; p < positions.length / 3; p++) {
@@ -186,6 +189,7 @@ function createScene() {
             console.log(`New colors: ${U10_colors}`)
             // earth.setVerticesData(BABYLON.VertexBuffer.ColorKind, U10_colors);
         });
+        */
 
 
 
@@ -213,15 +217,14 @@ function createScene() {
 
 
 
-        // earth.material = new BABYLON.StandardMaterial("mat", scene);
-        // earth.material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+        earth.material = new BABYLON.StandardMaterial("mat", scene);
+        earth.material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
 
-        // earth.material.diffuseTexture = videoTexture;
-
-
+        earth.material.diffuseTexture = videoTexture;
 
 
-        /*
+
+
         scene.onPointerObservable.add(function (evt){
             if (evt.pickInfo.pickedMesh === earth){
                 if (videoTexture.video.paused)
@@ -231,7 +234,6 @@ function createScene() {
                 console.log(videoTexture.video.paused ? "paused" : "playing");
             }
         }, BABYLON.PointerEventTypes.POINTERPICK);
-        */
 
 
 
